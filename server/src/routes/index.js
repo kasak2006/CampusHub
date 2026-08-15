@@ -4,6 +4,8 @@ import authRoutes from './auth.routes.js';
 import userRoutes from './user.routes.js';
 import clubRoutes from './club.routes.js';
 import eventRoutes from './event.routes.js';
+import courseRoutes from './course.routes.js';
+import attendanceRoutes from './attendance.routes.js';
 
 /**
  * Root API router. Feature routers get mounted here as phases land:
@@ -19,5 +21,7 @@ router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/clubs', clubRoutes);
 router.use('/events', eventRoutes);
+router.use('/courses', courseRoutes);
+router.use('/attendance', attendanceRoutes);
 
 export default router;

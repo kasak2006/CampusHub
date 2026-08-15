@@ -7,6 +7,9 @@ import Club from './models/Club.js';
 import ClubJoinRequest from './models/ClubJoinRequest.js';
 import Event from './models/Event.js';
 import Registration from './models/Registration.js';
+import Course from './models/Course.js';
+import AttendanceSession from './models/AttendanceSession.js';
+import AttendanceRecord from './models/AttendanceRecord.js';
 
 /**
  * Seed known non-student accounts so the Phase 1 "done when" check is testable
@@ -47,6 +50,32 @@ const SEED_USERS = [
     password: 'clublead123',
     role: 'club_lead',
     rollNumber: 'CS-2023-042',
+    department: 'Computer Science',
+  },
+  // Phase 4: a few extra students so a course roster has enough people for the
+  // attendance analytics (per-student %, below-threshold flag) to be meaningful.
+  {
+    name: 'Nina Novak',
+    email: 'nina@campushub.test',
+    password: 'student123',
+    role: 'student',
+    rollNumber: 'CS-2024-002',
+    department: 'Computer Science',
+  },
+  {
+    name: 'Omar Ortiz',
+    email: 'omar@campushub.test',
+    password: 'student123',
+    role: 'student',
+    rollNumber: 'CS-2024-003',
+    department: 'Computer Science',
+  },
+  {
+    name: 'Priya Patel',
+    email: 'priya@campushub.test',
+    password: 'student123',
+    role: 'student',
+    rollNumber: 'CS-2024-004',
     department: 'Computer Science',
   },
 ];
@@ -110,6 +139,66 @@ async function seed() {
     createdBy: lead._id,
   });
   console.log(`[seed] created event "${event.title}" (capacity ${event.capacity}) for ${club.name}`);
+
+  // Phase 4: a demo course owned by the faculty account with four enrolled
+  // students and four past sessions of marks, arranged so the analytics are
+  // interesting out of the box — Priya lands below the 75% threshold.
+  const faculty = usersByEmail['faculty@campushub.test'];
+  const roster = ['student', 'nina', 'omar', 'priya'].map((k) =>
+    k === 'student' ? student : usersByEmail[`${k}@campushub.test`]
+  );
+
+  await AttendanceRecord.deleteMany({ collegeId: env.defaultCollegeId });
+  await AttendanceSession.deleteMany({ collegeId: env.defaultCollegeId });
+  await Course.deleteMany({ collegeId: env.defaultCollegeId });
+
+  const course = await Course.create({
+    name: 'Data Structures',
+    code: 'CS-301',
+    description: 'Arrays, trees, graphs, and the algorithms that walk them.',
+    facultyId: faculty._id,
+    studentIds: roster.map((u) => u._id),
+    collegeId: env.defaultCollegeId,
+    createdBy: faculty._id,
+  });
+  console.log(`[seed] created course "${course.code} ${course.name}" with ${roster.length} students`);
+
+  // Four sessions over the last four weeks (oldest first).
+  const P = 'present';
+  const L = 'late';
+  const A = 'absent';
+  // rows: one status list per student, columns are the four sessions.
+  const marks = {
+    student: [P, P, P, P], // Sam   → 100%
+    nina: [P, P, A, P], //   Nina  → 75%
+    omar: [P, L, A, P], //   Omar  → 75% (late counts as attended)
+    priya: [A, A, P, A], //  Priya → 25% (below threshold)
+  };
+  const rosterKeys = ['student', 'nina', 'omar', 'priya'];
+
+  for (let i = 0; i < 4; i += 1) {
+    const d = new Date(Date.now() - (4 - i) * 7 * 24 * 60 * 60 * 1000);
+    const dateKey = d.toISOString().slice(0, 10);
+    const session = await AttendanceSession.create({
+      courseId: course._id,
+      date: new Date(`${dateKey}T00:00:00.000Z`),
+      dateKey,
+      title: `Lecture ${i + 1}`,
+      collegeId: env.defaultCollegeId,
+      createdBy: faculty._id,
+    });
+    await AttendanceRecord.insertMany(
+      rosterKeys.map((key, r) => ({
+        sessionId: session._id,
+        courseId: course._id,
+        studentId: roster[r]._id,
+        status: marks[key][i],
+        collegeId: env.defaultCollegeId,
+        markedBy: faculty._id,
+      }))
+    );
+  }
+  console.log('[seed] created 4 attendance sessions with marks (Priya is below 75%)');
 
   console.log(`[seed] Done. Seeded ${SEED_USERS.length} accounts into "${env.defaultCollegeId}".`);
   await mongoose.connection.close();

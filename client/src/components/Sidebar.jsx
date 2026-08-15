@@ -16,16 +16,17 @@ const OVERVIEW = [
 function manageItemsFor(role) {
   if (role === 'faculty')
     return [
-      { icon: 'i-book', label: 'Attendance', soon: true },
+      { to: '/courses', icon: 'i-book', label: 'Attendance' },
       { icon: 'i-chart', label: 'Analytics', soon: true },
     ];
   if (role === 'admin')
     return [
+      { to: '/courses', icon: 'i-book', label: 'Attendance' },
       { icon: 'i-chart', label: 'Analytics', soon: true },
       { icon: 'i-settings', label: 'Settings', soon: true },
     ];
   return [
-    { icon: 'i-book', label: 'Resources', soon: true },
+    { to: '/courses', icon: 'i-book', label: 'My attendance' },
     { icon: 'i-life', label: 'Help Center', soon: true },
   ];
 }
@@ -45,11 +46,11 @@ function NavItem({ item }) {
   );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ open = false }) {
   const { user } = useAuth();
 
   return (
-    <aside className="side">
+    <aside className={`side${open ? ' open' : ''}`}>
       <Link to="/dashboard" className="brand">
         <span className="logo">
           <Icon name="i-cap" />

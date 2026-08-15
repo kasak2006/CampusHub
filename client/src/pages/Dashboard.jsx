@@ -30,8 +30,9 @@ const HERO = {
   faculty: {
     eyebrow: 'Teaching',
     title: 'Attendance, minus the paperwork',
-    body: 'Course attendance and analytics arrive in Phase 4. For now, explore the campus clubs your students run.',
-    cta: 'Browse clubs',
+    body: 'Create courses, enroll students, and mark attendance in seconds — with per-student analytics and a live class trend.',
+    cta: 'Take attendance',
+    to: '/courses',
   },
   admin: {
     eyebrow: 'Oversight',
@@ -100,7 +101,7 @@ export default function Dashboard() {
             </div>
             <h2>{hero.title}</h2>
             <p>{hero.body}</p>
-            <Link to="/clubs" className="cta">
+            <Link to={hero.to ?? '/clubs'} className="cta">
               {hero.cta} <Icon name="i-arrow" />
             </Link>
           </div>

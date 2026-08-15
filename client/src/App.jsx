@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
+import { ToastProvider } from './context/ToastContext.jsx';
 import { IconSprite } from './components/Icons.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -16,6 +17,11 @@ import ClubDetail from './pages/ClubDetail.jsx';
 import Events from './pages/Events.jsx';
 import EventForm from './pages/EventForm.jsx';
 import EventDetail from './pages/EventDetail.jsx';
+import Courses from './pages/Courses.jsx';
+import CourseForm from './pages/CourseForm.jsx';
+import CourseDetail from './pages/CourseDetail.jsx';
+import CourseAnalytics from './pages/CourseAnalytics.jsx';
+import SessionMarking from './pages/SessionMarking.jsx';
 
 /**
  * Root component. Public/auth pages render standalone; authenticated pages
@@ -25,8 +31,9 @@ export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <IconSprite />
-        <BrowserRouter>
+        <ToastProvider>
+          <IconSprite />
+          <BrowserRouter>
           <Routes>
             {/* Public */}
             <Route path="/" element={<Home />} />
@@ -51,10 +58,17 @@ export default function App() {
               <Route path="/events/new" element={<EventForm />} />
               <Route path="/events/:id" element={<EventDetail />} />
               <Route path="/events/:id/edit" element={<EventForm />} />
+              <Route path="/courses" element={<Courses />} />
+              <Route path="/courses/new" element={<CourseForm />} />
+              <Route path="/courses/:id" element={<CourseDetail />} />
+              <Route path="/courses/:id/edit" element={<CourseForm />} />
+              <Route path="/courses/:id/analytics" element={<CourseAnalytics />} />
+              <Route path="/sessions/:sessionId" element={<SessionMarking />} />
             </Route>
           </Routes>
           <ThemeToggle />
-        </BrowserRouter>
+          </BrowserRouter>
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   );
