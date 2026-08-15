@@ -1,0 +1,39 @@
+# Render Blueprint for the CampusHub API (backend).
+# Deploy: New → Blueprint → point at this repo. Render reads this file, creates
+# the web service, and prompts for the secrets marked `sync: false`.
+#
+# The frontend deploys separately on Vercel (see client/vercel.json + README).
+services:
+  - type: web
+    name: campushub-api
+    runtime: node
+    rootDir: server
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # Comma-separated allowed origins — set this to your deployed frontend URL,
+      # e.g. https://campushub.vercel.app (add localhost too if you want).
+      - key: CLIENT_ORIGIN
+        sync: false
+      # MongoDB Atlas connection string.
+      - key: MONGO_URI
+        sync: false
+      # Generated once by Render and kept stable across deploys.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: DEFAULT_COLLEGE_ID
+        value: campushub-main
+      # Cloudinary — optional; uploads gracefully fall back to the given URL if unset.
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false

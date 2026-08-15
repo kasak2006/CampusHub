@@ -18,7 +18,7 @@ function initials(name = '') {
  * Glassy sticky topbar: search, notifications, and the current user with a
  * logout control. Search is presentational for now (no global search yet).
  */
-export default function Topbar() {
+export default function Topbar({ onMenu }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -29,6 +29,16 @@ export default function Topbar() {
 
   return (
     <div className="topbar">
+      <button
+        className="iconbtn topbar__menu"
+        type="button"
+        title="Menu"
+        aria-label="Open menu"
+        onClick={onMenu}
+      >
+        <Icon name="i-menu" />
+      </button>
+
       <div className="search">
         <Icon name="i-search" />
         <input placeholder="Search clubs, events, people…" aria-label="Search" />

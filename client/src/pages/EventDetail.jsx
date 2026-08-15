@@ -8,7 +8,15 @@ import {
   listEventRegistrations,
 } from '../services/events.js';
 import { subscribeToEvent } from '../services/socket.js';
+import { useToast } from '../context/ToastContext.jsx';
 import { Icon } from '../components/Icons.jsx';
+
+/** Human-friendly toast copy for a registration outcome. */
+const REG_TOAST = {
+  registered: "You're registered! 🎉",
+  waitlisted: "You're on the waitlist — we'll bump you up if a seat frees.",
+  cancelled: 'Your spot has been released.',
+};
 
 function formatWhen(startAt, endAt) {
   if (!startAt) return '';
@@ -33,6 +41,7 @@ function formatWhen(startAt, endAt) {
  */
 export default function EventDetail() {
   const { id } = useParams();
+  const toast = useToast();
 
   const [event, setEvent] = useState(null);
   const [roster, setRoster] = useState(null);
@@ -93,8 +102,11 @@ export default function EventDetail() {
             }
           : prev
       );
+      const msg = REG_TOAST[res.registrationStatus];
+      if (msg) toast.success(msg);
     } catch (err) {
       setActionError(err.message);
+      toast.error(err.message);
     } finally {
       setBusy(false);
     }
@@ -105,8 +117,10 @@ export default function EventDetail() {
     try {
       await cancelEvent(id);
       setEvent((prev) => ({ ...prev, status: 'cancelled' }));
+      toast.info('Event cancelled — registrants can no longer sign up.');
     } catch (err) {
       setActionError(err.message);
+      toast.error(err.message);
     }
   };
 

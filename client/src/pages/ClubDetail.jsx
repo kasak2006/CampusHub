@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { useToast } from '../context/ToastContext.jsx';
 import { Icon } from '../components/Icons.jsx';
 import {
   getClub,
@@ -26,13 +27,14 @@ export default function ClubDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, refresh } = useAuth();
+  const toast = useToast();
 
   const [club, setClub] = useState(null);
   const [requests, setRequests] = useState([]);
   const [events, setEvents] = useState([]);
   const [state, setState] = useState('loading');
   const [error, setError] = useState('');
-  const [action, setAction] = useState({ busy: false, message: '', error: '' });
+  const [action, setAction] = useState({ busy: false });
 
   const canManage = club?.viewer?.isLead || user.role === 'admin';
 
@@ -56,14 +58,16 @@ export default function ClubDetail() {
   }, [load]);
 
   const run = async (fn, okMessage) => {
-    setAction({ busy: true, message: '', error: '' });
+    setAction({ busy: true });
     try {
       await fn();
       await load();
       await refresh?.();
-      setAction({ busy: false, message: okMessage, error: '' });
+      setAction({ busy: false });
+      toast.success(okMessage);
     } catch (err) {
-      setAction({ busy: false, message: '', error: err.message });
+      setAction({ busy: false });
+      toast.error(err.message);
     }
   };
 
@@ -72,9 +76,10 @@ export default function ClubDetail() {
     try {
       await deleteClub(id);
       await refresh?.();
+      toast.success('Club deleted.');
       navigate('/clubs');
     } catch (err) {
-      setAction({ busy: false, message: '', error: err.message });
+      toast.error(err.message);
     }
   };
 
@@ -167,16 +172,6 @@ export default function ClubDetail() {
           )}
         </div>
 
-        {action.message && (
-          <p className="form-success" style={{ marginTop: 14, marginBottom: 0 }}>
-            {action.message}
-          </p>
-        )}
-        {action.error && (
-          <p className="form-error" style={{ marginTop: 14, marginBottom: 0 }}>
-            {action.error}
-          </p>
-        )}
       </div>
 
       {/* Pending requests (leads/admin) */}

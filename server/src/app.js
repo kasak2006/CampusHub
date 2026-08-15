@@ -14,6 +14,10 @@ import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 export function createApp() {
   const app = express();
 
+  // Behind a hosting proxy (Render/Railway/Heroku) in production so Express sees
+  // the real client protocol/IP — needed for Secure cookies and correct logging.
+  if (isProd) app.set('trust proxy', 1);
+
   app.use(
     cors({
       origin: env.clientOrigin,

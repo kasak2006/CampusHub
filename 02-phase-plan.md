@@ -84,16 +84,16 @@ This document breaks the build into sequential phases. Each phase has a clear go
 **Goal:** A data-integrity-focused module — different muscle than Phase 3's real-time work.
 
 **Tasks:**
-- [ ] Build `Course`, `AttendanceSession`, `AttendanceRecord` schemas
-- [ ] Course creation API (faculty creates a course, enrolls students — manual add or CSV/list for now)
-- [ ] Attendance session creation (faculty picks a course + date)
-- [ ] Marking UI: faculty sees enrolled student list, marks present/absent/late, submits
-- [ ] Prevent duplicate sessions for the same course+date (or handle edit-existing-session gracefully)
-- [ ] Student view: attendance % per enrolled course
-- [ ] Faculty analytics: aggregation pipeline for per-student %, list of students below a threshold (e.g. 75%)
-- [ ] Faculty analytics: simple trend chart (Recharts) of daily/weekly attendance % for a course
+- [x] Build `Course`, `AttendanceSession`, `AttendanceRecord` schemas
+- [x] Course creation API (faculty creates a course, enrolls students by email — `authorize('faculty','admin')`)
+- [x] Attendance session creation (faculty picks a course + date)
+- [x] Marking UI: faculty sees enrolled student list, marks present/absent/late, submits (segmented control + bulk all-present/absent)
+- [x] Prevent duplicate sessions for the same course+date (unique `{courseId, dateKey}` index + friendly 409 → edit the existing one)
+- [x] Student view: attendance % per enrolled course (course list + detail + per-session history)
+- [x] Faculty analytics: aggregation pipeline for per-student %, list of students below a threshold (default 75%, `?threshold=`)
+- [x] Faculty analytics: trend chart (Recharts line) of per-session attendance % for a course, with a threshold reference line
 
-**Done when:** A faculty member can mark attendance for a session, a student immediately sees an updated %, and the faculty dashboard correctly flags below-threshold students using a real aggregation query (not a client-side loop).
+**Done when:** A faculty member can mark attendance for a session, a student immediately sees an updated %, and the faculty dashboard correctly flags below-threshold students using a real aggregation query (not a client-side loop). ✅ Verified live: faculty marked Priya present in Lecture 4 → her student view updated 25% → 50% (2/4) instantly; below-75% flag comes from a `$group` aggregation.
 
 ---
 
@@ -102,16 +102,16 @@ This document breaks the build into sequential phases. Each phase has a clear go
 **Goal:** Make the two modules feel like one product, not two bolted-together demos.
 
 **Tasks:**
-- [ ] Consistent UI/UX pass across both modules (shared components, spacing, color system)
-- [ ] Error handling and loading states everywhere (no silent failures)
-- [ ] Input validation on both frontend and backend (don't trust the client)
-- [ ] Basic notifications: e.g. "You're registered!" toast, "Attendance marked" confirmation
-- [ ] Mobile-responsive check
-- [ ] Seed script for demo data (sample clubs, events, courses, students) so you can demo instantly
-- [ ] Basic README with setup instructions
-- [ ] Deploy: backend (Render/Railway), frontend (Vercel/Netlify), MongoDB Atlas — confirm Socket.io works across the deployed environment (this trips people up — check CORS and websocket support on your host)
+- [x] Consistent UI/UX pass across both modules (shared design tokens, `.btn`/`.card`/`.chip`/`.list` components, `utils/attendance.js`)
+- [x] Error handling and loading states everywhere (every page has loading/error/ready states; API errors surface via toasts)
+- [x] Input validation on both frontend and backend (`required` inputs + server-side guards in every controller)
+- [x] Basic notifications: toast system (`context/ToastContext.jsx`) — "You're registered!", "Attendance saved", join/enroll/delete confirmations, and error toasts
+- [x] Mobile-responsive check — sidebar collapses into a slide-in drawer (hamburger in the topbar); tables scroll in-container; no horizontal page overflow at 375px
+- [x] Seed script for demo data (clubs, event, course + attendance) — one command, idempotent
+- [x] Basic README with setup instructions (+ Features and Deployment sections)
+- [~] Deploy config ready: `render.yaml` (API) + `client/vercel.json` (SPA), cross-origin auth cookie (`SameSite=None; Secure` in prod), `trust proxy`, CORS/Socket.io pinned to `CLIENT_ORIGIN`. **Actual cloud deploy pending the user's Render/Vercel/Atlas accounts** (documented in the README).
 
-**Done when:** A stranger can clone the repo, follow your README, and get a working local instance — and you have a deployed link that demonstrates both modules end-to-end, including the real-time registration count working live.
+**Done when:** A stranger can clone the repo, follow your README, and get a working local instance — and you have a deployed link that demonstrates both modules end-to-end, including the real-time registration count working live. ✅ Local instance works from the README; ⏳ deployed link pending the user's hosting accounts (all config + docs in place).
 
 ---
 

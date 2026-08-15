@@ -75,7 +75,11 @@ body{
     var(--bg);
   background-attachment:fixed;
   color:var(--ink);
-  min-height:100vh;
+  min-height:100dvh;
+  /* Flex column establishes a block-formatting context so the .app's vertical
+     margins don't collapse through <body> and overflow the viewport (which was
+     producing a redundant outer scrollbar on top of .main's inner one). */
+  display:flex;flex-direction:column;
   -webkit-font-smoothing:antialiased;
   letter-spacing:-.011em;
 }
@@ -88,22 +92,24 @@ a{color:inherit}
 
 /* ============ APP SHELL ============ */
 .app{
-  max-width:1240px;margin:0 auto;
+  max-width:1240px;margin:20px auto;
   background:var(--surface);
   border:1px solid var(--border);
   border-radius:var(--r-lg);
   box-shadow:var(--shadow-lg);
   overflow:hidden;
   display:grid;grid-template-columns:236px 1fr;
-  min-height:calc(100vh - 40px);
-  margin-top:20px;margin-bottom:20px;
+  /* Fixed to the viewport so the sidebar + topbar stay pinned while the main
+     column scrolls internally (see .main / .side overflow below). */
+  height:calc(100dvh - 40px);
 }
 
-/* Sidebar */
+/* Sidebar — stays put; scrolls on its own only if it's taller than the shell. */
 .side{
   background:var(--surface-2);
   border-right:1px solid var(--border);
   padding:20px 14px;display:flex;flex-direction:column;gap:22px;
+  min-height:0;overflow-y:auto;
 }
 .brand{display:flex;align-items:center;gap:11px;padding:4px 8px 2px;text-decoration:none;color:var(--ink)}
 .brand .logo{
@@ -138,8 +144,8 @@ a{color:inherit}
 .upsell b{font-size:13.5px}
 .upsell p{margin:3px 0 10px;font-size:12px;color:var(--muted);line-height:1.45}
 
-/* Main */
-.main{display:flex;flex-direction:column;min-width:0}
+/* Main — the scroll container; topbar sticks to its top, sidebar stays fixed. */
+.main{display:flex;flex-direction:column;min-width:0;min-height:0;overflow-y:auto}
 .topbar{
   position:sticky;top:0;z-index:5;
   display:flex;align-items:center;gap:14px;
@@ -149,7 +155,11 @@ a{color:inherit}
   border-bottom:1px solid var(--border);
 }
 .search{
-  display:flex;align-items:center;gap:9px;flex:1;max-width:380px;
+  display:flex;align-items:center;gap:9px;
+  /* Sit at ~380px on the left and let this auto-margin eat the free space, so
+     the icon/user controls are pushed to the right edge instead of the whole
+     row clustering left with a big gap on the right. */
+  flex:0 1 380px;margin-right:auto;
   background:var(--surface-3);border:1px solid transparent;
   border-radius:11px;padding:8px 13px;color:var(--faint);
 }
@@ -370,12 +380,94 @@ a{color:inherit}
 }
 .themebtn svg{width:16px;height:16px}
 
+/* ============ TOASTS (Phase 5) ============ */
+.toast-wrap{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:60;
+  display:flex;flex-direction:column;gap:10px;width:min(92vw,392px);pointer-events:none;
+}
+.toast{
+  pointer-events:auto;display:flex;align-items:center;gap:11px;
+  background:var(--surface);border:1px solid var(--border);border-left-width:3px;
+  border-radius:12px;padding:12px 12px 12px 14px;box-shadow:var(--shadow-lg);
+  font-size:13.5px;font-weight:500;color:var(--ink);animation:toast-in .22s ease;
+}
+.toast.success{border-left-color:var(--good)}
+.toast.error{border-left-color:var(--crit)}
+.toast.info{border-left-color:var(--info)}
+.toast__ic{flex:none;width:20px;height:20px;display:grid;place-items:center;border-radius:50%;color:#fff}
+.toast.success .toast__ic{background:var(--good)}
+.toast.error .toast__ic{background:var(--crit)}
+.toast.info .toast__ic{background:var(--info)}
+.toast__msg{flex:1;min-width:0;line-height:1.4}
+.toast__x{flex:none;background:none;border:0;color:var(--faint);cursor:pointer;padding:2px;display:grid;place-items:center;border-radius:6px}
+.toast__x:hover{color:var(--ink);background:var(--surface-3)}
+@keyframes toast-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.toast{animation:none}}
+
+/* ============ ATTENDANCE (Phase 4) ============ */
+/* stat-tile grid variants used outside the bento */
+.stats--row{grid-template-rows:none;grid-template-columns:1fr 1fr}
+.stats--4{grid-template-rows:none;grid-template-columns:repeat(4,1fr)}
+
+/* sessions list rows carry an inline delete button next to the link */
+.session-li{display:flex;align-items:stretch;gap:8px}
+.session-li__del{flex:none;align-self:center}
+
+/* marking toolbar + roster */
+.mark-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.mark-tally{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.mark-bulk{display:flex;gap:8px}
+.mark-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:10px 14px;box-shadow:var(--shadow)}
+.mark-row__id{min-width:0;flex:1}
+.mark-row__id b{font-size:14px;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mark-row__id small{display:block}
+.mark-actions{display:flex;gap:10px;margin-top:16px}
+
+/* three-state segmented control */
+.seg{display:inline-flex;flex:none;background:var(--surface-3);border:1px solid var(--border);border-radius:10px;padding:2px}
+.seg__btn{border:0;background:none;font:inherit;font-size:12.5px;font-weight:600;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer;transition:.12s}
+.seg__btn:hover{color:var(--ink)}
+.seg__btn.on{color:#fff}
+.seg__btn.on-present{background:var(--good)}
+.seg__btn.on-late{background:var(--warn)}
+.seg__btn.on-absent{background:var(--crit)}
+
+/* analytics table */
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th,.tbl td{text-align:left;padding:11px 16px;border-bottom:1px solid var(--border)}
+.tbl thead th{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.tbl tbody tr:last-child td{border-bottom:0}
+.tbl .num{text-align:right}
+.tbl th.num{text-align:right}
+.tbl .row-flag{background:color-mix(in srgb,var(--crit) 7%,transparent)}
+
+/* threshold input in the section header */
+.thresh{display:inline-flex;align-items:center;gap:8px;font-size:12.5px}
+.thresh .input{width:66px;padding:6px 10px;text-align:center}
+
+/* the topbar hamburger only exists on mobile (see media query) */
+.topbar__menu{display:none}
+.drawer-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:39;animation:toast-in .18s ease}
+@media (min-width:921px){.drawer-backdrop{display:none}}
+
 /* ============ RESPONSIVE ============ */
 @media (max-width:920px){
   .app{grid-template-columns:1fr}
-  .side{display:none}
+  /* Sidebar becomes an off-canvas drawer, slid in by .open (see AppLayout). */
+  .side{
+    position:fixed;top:0;left:0;bottom:0;z-index:40;width:min(84vw,272px);
+    transform:translateX(-100%);transition:transform .22s ease;
+  }
+  .side.open{transform:none;box-shadow:var(--shadow-lg)}
+  .topbar__menu{display:grid}
   .col-4,.col-5,.col-6,.col-7,.col-8,.hero,.stats{grid-column:span 12}
   .stats{grid-template-columns:1fr 1fr;grid-template-rows:none}
+  .stats--4{grid-template-columns:1fr 1fr}
   .hero .htext{max-width:100%}
+}
+@media (max-width:560px){
+  .mark-row{flex-wrap:wrap}
+  .seg{width:100%;justify-content:space-between}
+  .seg__btn{flex:1}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}

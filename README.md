@@ -7,6 +7,14 @@ to extend to multi-college later (every record carries a `collegeId`).
 See [`01-project-overview.md`](01-project-overview.md) and
 [`02-phase-plan.md`](02-phase-plan.md) for full scope and the phased build guide.
 
+## Features
+
+- **Auth & roles** — student / club_lead / faculty / admin, JWT in an httpOnly cookie, RBAC enforced at the route level, and a role-aware dashboard.
+- **Clubs** — self-service club creation (creator auto-becomes lead), join requests with lead approval, and member/lead management.
+- **Events (real-time)** — club events with **atomic capacity handling** (no oversell), an automatic FIFO **waitlist**, and a **live registration count** that updates across tabs over Socket.io — no refresh.
+- **Attendance** — faculty create courses, enroll students by email, and mark sessions present/late/absent. Students see their attendance % per course; faculty get **aggregation-driven analytics** (per-student %, below-threshold flagging, and a **Recharts** trend chart).
+- **Polish** — toast notifications, light/dark themes, a responsive app shell, and a one-command seed for instant demo data.
+
 ## Tech Stack
 
 | Layer        | Choice                     |
@@ -101,10 +109,14 @@ three are green, the Phase 0 foundation is solid:
 
 ### Seeded test accounts
 
-Run `npm run seed` from `server/` (idempotent). It creates accounts for
-testing role-aware dashboards, plus a demo `Coding Club` (led by the club lead,
-with a pending join request from the student) so the Phase 2 flow is testable
-immediately:
+Run `npm run seed` from `server/` (idempotent). It creates the accounts below
+plus demo content so every module is testable immediately:
+
+- a `Coding Club` (led by the club lead, with a pending join request from Sam),
+- a `Hackathon Kickoff` event (capacity 2, to exercise the live count + waitlist),
+- a `CS-301 Data Structures` course with four enrolled students and four marked
+  attendance sessions (Priya is seeded below the 75% threshold so the analytics
+  flag and trend chart aren't empty).
 
 | Role      | Email                     | Password      |
 | --------- | ------------------------- | ------------- |
@@ -112,8 +124,37 @@ immediately:
 | Admin     | `admin@campushub.test`    | `admin123`    |
 | Student   | `student@campushub.test`  | `student123`  |
 | Club Lead | `clublead@campushub.test` | `clublead123` |
+| Student   | `nina@campushub.test`     | `student123`  |
+| Student   | `omar@campushub.test`     | `student123`  |
+| Student   | `priya@campushub.test`    | `student123`  |
 
 New students can also self-register at `/register`.
+
+## Deployment
+
+The app deploys as two services against a MongoDB Atlas database: the Express
+API on **Render** (blueprint in [`render.yaml`](render.yaml)) and the Vite
+frontend on **Vercel** ([`client/vercel.json`](client/vercel.json)). They live on
+different domains, so the auth cookie is issued `SameSite=None; Secure` in
+production (see `server/src/utils/generateToken.js`) and CORS/Socket.io are
+locked to `CLIENT_ORIGIN`.
+
+1. **MongoDB Atlas** — create a free cluster, add a database user, and allow
+   network access (`0.0.0.0/0` for a demo). Copy the connection string.
+2. **Backend (Render)** — New → Blueprint → select this repo. Render reads
+   `render.yaml`; fill in the prompted secrets: `MONGO_URI`, `CLIENT_ORIGIN`
+   (your Vercel URL, set after step 3 — you can update it later), and optionally
+   the Cloudinary keys. `JWT_SECRET` is generated for you. Note the service URL,
+   e.g. `https://campushub-api.onrender.com`.
+3. **Frontend (Vercel)** — New Project → import this repo → set **Root
+   Directory** to `client`. Add env vars `VITE_API_BASE_URL` and
+   `VITE_SOCKET_URL`, both set to your Render URL from step 2. Deploy.
+4. **Wire them up** — set the backend's `CLIENT_ORIGIN` to the Vercel URL and
+   redeploy. Then seed the production DB: `MONGO_URI=<atlas> npm run seed` from
+   `server/` locally.
+
+> Free Render web services sleep when idle — the first request after a nap takes
+> a few seconds to wake. That's expected on the free tier.
 
 ## Build Roadmap
 
@@ -121,5 +162,5 @@ New students can also self-register at `/register`.
 - [x] **Phase 1** — Auth & spine (User schema, JWT, RBAC, role-aware dashboards)
 - [x] **Phase 2** — Clubs module (Club + join-request schemas, CRUD API, join/approve flow, self-service club creation)
 - [x] **Phase 3** — Events module (Event + Registration schemas, atomic capacity + waitlist, Socket.io live registration counts)
-- [ ] **Phase 4** — Attendance module
-- [ ] **Phase 5** — Polish & integration + deploy
+- [x] **Phase 4** — Attendance module (Course/Session/Record schemas, faculty marking, aggregation analytics + Recharts trend)
+- [x] **Phase 5** — Polish & integration (toast notifications, cross-origin-ready auth, deploy config, README)
