@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { createClub, getClub, updateClub } from '../services/clubs.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import { canCreateClub } from '../utils/roles.js';
 import { Icon } from '../components/Icons.jsx';
 
 /**
@@ -12,6 +14,13 @@ export default function ClubForm() {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  // Creation is students/leads only (staff manage clubs, not found them). Edit
+  // stays open so an admin can still manage any club via this same form.
+  useEffect(() => {
+    if (!isEdit && !canCreateClub(user.role)) navigate('/clubs', { replace: true });
+  }, [isEdit, user.role, navigate]);
 
   const [form, setForm] = useState({ name: '', description: '', category: '' });
   const [logo, setLogo] = useState('');

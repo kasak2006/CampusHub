@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import { canCreateClub } from '../utils/roles.js';
 import { Icon } from './Icons.jsx';
 
 /**
@@ -80,13 +81,15 @@ export default function Sidebar({ open = false }) {
 
       <div className="spacer" />
 
-      <div className="upsell">
-        <b>Start a club</b>
-        <p>Rally members, plan events, and track engagement in one place.</p>
-        <Link to="/clubs/new" className="btn primary block">
-          <Icon name="i-plus" /> New club
-        </Link>
-      </div>
+      {canCreateClub(user.role) && (
+        <div className="upsell">
+          <b>Start a club</b>
+          <p>Rally members, plan events, and track engagement in one place.</p>
+          <Link to="/clubs/new" className="btn primary block">
+            <Icon name="i-plus" /> New club
+          </Link>
+        </div>
+      )}
     </aside>
   );
 }

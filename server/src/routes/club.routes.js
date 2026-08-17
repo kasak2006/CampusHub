@@ -11,21 +11,22 @@ import {
   decideJoinRequest,
   addClubLead,
 } from '../controllers/clubController.js';
-import { protect } from '../middleware/authMiddleware.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
 
 /**
  * Clubs module routes (Phase 2), mounted at /api/clubs.
  *
  * Every route requires authentication. Per-club permissions (lead/admin) are
  * enforced inside the controllers against Club.leadIds, so a lead only manages
- * their own club(s). Club creation is self-service — any logged-in user may
- * create one and becomes its first lead.
+ * their own club(s). Club creation is self-service for students and existing
+ * club leads — clubs are student-run, so faculty/admin manage rather than found
+ * them. The creator becomes the club's first lead.
  */
 const router = Router();
 
 router.use(protect);
 
-router.route('/').get(listClubs).post(createClub);
+router.route('/').get(listClubs).post(authorize('student', 'club_lead'), createClub);
 
 router.route('/:id').get(getClub).patch(updateClub).delete(deleteClub);
 

@@ -37,6 +37,8 @@ export default function ClubDetail() {
   const [action, setAction] = useState({ busy: false });
 
   const canManage = club?.viewer?.isLead || user.role === 'admin';
+  // Staff (admin/faculty) manage rather than participate — hide join actions.
+  const isStaff = user.role === 'admin' || user.role === 'faculty';
 
   const load = useCallback(async () => {
     const data = await getClub(id);
@@ -133,7 +135,7 @@ export default function ClubDetail() {
         </p>
 
         <div className="club-detail__actions">
-          {!viewer.isMember && !viewer.hasPendingRequest && (
+          {!isStaff && !viewer.isMember && !viewer.hasPendingRequest && (
             <button
               className="btn primary"
               disabled={action.busy}
@@ -142,7 +144,7 @@ export default function ClubDetail() {
               <Icon name="i-plus" /> Request to join
             </button>
           )}
-          {!viewer.isMember && viewer.hasPendingRequest && (
+          {!isStaff && !viewer.isMember && viewer.hasPendingRequest && (
             <span className="chip soon" style={{ padding: '8px 14px' }}>
               <Icon name="i-clock" style={{ width: 13, height: 13, verticalAlign: '-2px' }} />{' '}
               Request pending
@@ -159,9 +161,13 @@ export default function ClubDetail() {
           )}
           {canManage && (
             <>
-              <Link to={`/events/new?clubId=${id}`} className="btn soft">
-                <Icon name="i-calendar" /> New event
-              </Link>
+              {/* Only a club's lead can author its events — admins manage
+                  existing clubs/events but don't host new events. */}
+              {viewer.isLead && (
+                <Link to={`/events/new?clubId=${id}`} className="btn soft">
+                  <Icon name="i-calendar" /> New event
+                </Link>
+              )}
               <Link to={`/clubs/${id}/edit`} className="btn ghost">
                 <Icon name="i-edit" /> Edit
               </Link>

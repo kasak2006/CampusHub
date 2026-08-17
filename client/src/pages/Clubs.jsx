@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { listClubs } from '../services/clubs.js';
+import { useAuth } from '../context/AuthContext.jsx';
+import { canCreateClub } from '../utils/roles.js';
 import { Icon } from '../components/Icons.jsx';
 
 /**
  * Club directory. Lists every club with membership counts and the viewer's
- * relationship (member / lead / pending). Anyone logged in can browse and
- * create a club (self-service).
+ * relationship (member / lead / pending). Anyone logged in can browse; only
+ * students and club leads may create a club (staff manage rather than found).
  */
 export default function Clubs() {
+  const { user } = useAuth();
+  const canCreate = canCreateClub(user.role);
   const [clubs, setClubs] = useState([]);
   const [state, setState] = useState('loading');
   const [error, setError] = useState('');
@@ -31,19 +35,23 @@ export default function Clubs() {
           <h1>Clubs</h1>
           <p>Browse student clubs and request to join — or start your own.</p>
         </div>
-        <Link to="/clubs/new" className="btn primary">
-          <Icon name="i-plus" /> Create club
-        </Link>
+        {canCreate && (
+          <Link to="/clubs/new" className="btn primary">
+            <Icon name="i-plus" /> Create club
+          </Link>
+        )}
       </div>
 
       {state === 'loading' && <p className="muted">Loading clubs…</p>}
       {state === 'error' && <p className="form-error">{error}</p>}
       {state === 'ready' && clubs.length === 0 && (
         <div className="empty-state">
-          <p>No clubs yet. Be the first to create one!</p>
-          <Link to="/clubs/new" className="btn primary" style={{ marginTop: 12 }}>
-            <Icon name="i-plus" /> Create a club
-          </Link>
+          <p>{canCreate ? 'No clubs yet. Be the first to create one!' : 'No clubs yet.'}</p>
+          {canCreate && (
+            <Link to="/clubs/new" className="btn primary" style={{ marginTop: 12 }}>
+              <Icon name="i-plus" /> Create a club
+            </Link>
+          )}
         </div>
       )}
 

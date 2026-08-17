@@ -8,6 +8,7 @@ import {
   listEventRegistrations,
 } from '../services/events.js';
 import { subscribeToEvent } from '../services/socket.js';
+import { useAuth } from '../context/AuthContext.jsx';
 import { useToast } from '../context/ToastContext.jsx';
 import { Icon } from '../components/Icons.jsx';
 
@@ -41,7 +42,10 @@ function formatWhen(startAt, endAt) {
  */
 export default function EventDetail() {
   const { id } = useParams();
+  const { user } = useAuth();
   const toast = useToast();
+  // Staff (admin/faculty) manage rather than participate — hide registration.
+  const isStaff = user.role === 'admin' || user.role === 'faculty';
 
   const [event, setEvent] = useState(null);
   const [roster, setRoster] = useState(null);
@@ -206,7 +210,7 @@ export default function EventDetail() {
                   <button className="btn ghost" disabled={busy} onClick={() => act(() => cancelRegistration(id))}>Leave waitlist</button>
                 </>
               )}
-              {!event.viewerStatus && (
+              {!isStaff && !event.viewerStatus && (
                 <button className="btn primary" disabled={busy} onClick={() => act(() => registerForEvent(id))}>
                   {event.isFull ? 'Join waitlist' : 'Register'}
                 </button>

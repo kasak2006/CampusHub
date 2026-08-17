@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { listClubs } from '../services/clubs.js';
+import { canCreateClub } from '../utils/roles.js';
 import { Icon } from '../components/Icons.jsx';
 
 const WEEK_BARS = [
@@ -87,9 +88,11 @@ export default function Dashboard() {
               : 'Here’s what’s happening on campus.'}
           </p>
         </div>
-        <Link to="/clubs/new" className="btn primary">
-          <Icon name="i-plus" /> Create club
-        </Link>
+        {canCreateClub(user.role) && (
+          <Link to="/clubs/new" className="btn primary">
+            <Icon name="i-plus" /> Create club
+          </Link>
+        )}
       </div>
 
       <div className="bento">
