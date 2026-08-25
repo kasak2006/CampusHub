@@ -10,6 +10,7 @@ import Registration from './models/Registration.js';
 import Course from './models/Course.js';
 import AttendanceSession from './models/AttendanceSession.js';
 import AttendanceRecord from './models/AttendanceRecord.js';
+import Announcement from './models/Announcement.js';
 
 /**
  * Seed known non-student accounts so the Phase 1 "done when" check is testable
@@ -199,6 +200,40 @@ async function seed() {
     );
   }
   console.log('[seed] created 4 attendance sessions with marks (Priya is below 75%)');
+
+  // Phase 6: a few demo announcements across the three scopes so the feed and
+  // the notification bell aren't empty on first login. (No live notifications
+  // are fanned out here — the socket server isn't running during a seed; the
+  // feed is populated directly.)
+  await Announcement.deleteMany({ collegeId: env.defaultCollegeId });
+  await Announcement.create([
+    {
+      scope: 'college',
+      targetId: null,
+      title: 'Welcome to the new semester!',
+      body: 'Campus reopens Monday. Check your dashboard for clubs, events, and your course attendance.',
+      pinned: true,
+      authorId: faculty._id,
+      collegeId: env.defaultCollegeId,
+    },
+    {
+      scope: 'club',
+      targetId: club._id,
+      title: 'Hack night this Friday',
+      body: 'Bring a laptop and an idea — pizza is on the club. See the Hackathon Kickoff event to register.',
+      authorId: lead._id,
+      collegeId: env.defaultCollegeId,
+    },
+    {
+      scope: 'course',
+      targetId: course._id,
+      title: 'Lecture 5 moved to Lab 2',
+      body: 'Next week we are in Lab 2 for a hands-on session on balanced trees. Same time.',
+      authorId: faculty._id,
+      collegeId: env.defaultCollegeId,
+    },
+  ]);
+  console.log('[seed] created 3 demo announcements (college, club, course scopes)');
 
   console.log(`[seed] Done. Seeded ${SEED_USERS.length} accounts into "${env.defaultCollegeId}".`);
   await mongoose.connection.close();

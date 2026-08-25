@@ -23,6 +23,17 @@ socket.on('disconnect', (reason) => {
 });
 
 /**
+ * Force a fresh handshake so the server re-reads the auth cookie (Phase 6). The
+ * socket auto-connects at page load; if the user then logs in (or out) within
+ * the same page session, reconnecting re-runs the handshake with the current
+ * cookie so they join/leave their `user:${id}` notification room correctly.
+ */
+export function reconnectSocket() {
+  socket.disconnect();
+  socket.connect();
+}
+
+/**
  * Join an event's room and receive live count updates. Returns an unsubscribe
  * function that removes the listener and leaves the room. Re-joins on reconnect
  * so updates survive a dropped connection.
@@ -47,6 +58,21 @@ export function subscribeToEvent(eventId, onUpdate) {
     socket.off('connect', join);
     socket.emit('event:leave', id);
   };
+}
+
+/**
+ * Listen for live notifications (Phase 6). The server auto-joins each connection
+ * to its `user:${id}` room from the auth cookie, so the client just listens — no
+ * join needed. Returns an unsubscribe function.
+ *
+ *   const off = subscribeToNotifications((n) => addNotification(n));
+ *   // …later
+ *   off();
+ */
+export function subscribeToNotifications(onNotification) {
+  const handler = (notification) => onNotification(notification);
+  socket.on('notification', handler);
+  return () => socket.off('notification', handler);
 }
 
 export default socket;

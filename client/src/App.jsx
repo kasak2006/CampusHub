@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ThemeProvider } from './context/ThemeContext.jsx';
 import { ToastProvider } from './context/ToastContext.jsx';
+import { NotificationProvider } from './context/NotificationContext.jsx';
 import { IconSprite } from './components/Icons.jsx';
 import ThemeToggle from './components/ThemeToggle.jsx';
 import ProtectedRoute from './components/ProtectedRoute.jsx';
@@ -22,6 +23,7 @@ import CourseForm from './pages/CourseForm.jsx';
 import CourseDetail from './pages/CourseDetail.jsx';
 import CourseAnalytics from './pages/CourseAnalytics.jsx';
 import SessionMarking from './pages/SessionMarking.jsx';
+import Announcements from './pages/Announcements.jsx';
 
 /**
  * Root component. Public/auth pages render standalone; authenticated pages
@@ -32,6 +34,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <ToastProvider>
+          <NotificationProvider>
           <IconSprite />
           <BrowserRouter>
           <Routes>
@@ -64,10 +67,12 @@ export default function App() {
               <Route path="/courses/:id/edit" element={<CourseForm />} />
               <Route path="/courses/:id/analytics" element={<CourseAnalytics />} />
               <Route path="/sessions/:sessionId" element={<SessionMarking />} />
+              <Route path="/announcements" element={<Announcements />} />
             </Route>
           </Routes>
           <ThemeToggle />
           </BrowserRouter>
+          </NotificationProvider>
         </ToastProvider>
       </AuthProvider>
     </ThemeProvider>

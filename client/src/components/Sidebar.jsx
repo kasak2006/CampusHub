@@ -11,7 +11,7 @@ const OVERVIEW = [
   { to: '/dashboard', icon: 'i-grid', label: 'Dashboard' },
   { to: '/clubs', icon: 'i-users', label: 'Clubs' },
   { to: '/events', icon: 'i-calendar', label: 'Events' },
-  { icon: 'i-mega', label: 'Announcements', soon: true },
+  { to: '/announcements', icon: 'i-mega', label: 'Announcements' },
 ];
 
 function manageItemsFor(role) {
