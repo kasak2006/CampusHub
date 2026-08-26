@@ -8,8 +8,10 @@ import {
   unenrollStudent,
 } from '../services/courses.js';
 import { listSessions, createSession, deleteSession } from '../services/attendance.js';
+import { listAssignments } from '../services/assignments.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { pctClass } from '../utils/attendance.js';
+import { dueLabel, isOverdue, submissionChip } from '../utils/assignments.js';
 
 function initials(name = '') {
   return name.trim().charAt(0).toUpperCase() || '?';
@@ -47,6 +49,7 @@ export default function CourseDetail() {
 
   const [course, setCourse] = useState(null);
   const [sessions, setSessions] = useState([]);
+  const [assignments, setAssignments] = useState([]);
   const [state, setState] = useState('loading');
   const [error, setError] = useState('');
   const [action, setAction] = useState({ busy: false });
@@ -58,7 +61,12 @@ export default function CourseDetail() {
   const load = useCallback(async () => {
     const data = await getCourse(id);
     setCourse(data);
-    setSessions(await listSessions(id).catch(() => []));
+    const [sess, asg] = await Promise.all([
+      listSessions(id).catch(() => []),
+      listAssignments(id).catch(() => []),
+    ]);
+    setSessions(sess);
+    setAssignments(asg);
   }, [id]);
 
   useEffect(() => {
@@ -179,6 +187,9 @@ export default function CourseDetail() {
             <Link to={`/courses/${id}/analytics`} className="btn soft">
               <Icon name="i-chart" /> Analytics
             </Link>
+            <Link to={`/courses/${id}/gradebook`} className="btn soft">
+              <Icon name="i-book" /> Gradebook
+            </Link>
             <Link to={`/courses/${id}/edit`} className="btn ghost">
               <Icon name="i-edit" /> Edit
             </Link>
@@ -275,6 +286,63 @@ export default function CourseDetail() {
           )}
         </section>
       )}
+
+      {/* Assignments */}
+      <section style={{ marginTop: 8 }}>
+        <div className="section-h">
+          <h2>Assignments</h2>
+          <span className="ln" />
+          <span className="chip soft">{assignments.length}</span>
+          {canManage && (
+            <Link to={`/courses/${id}/assignments/new`} className="btn primary sm">
+              <Icon name="i-plus" /> New assignment
+            </Link>
+          )}
+        </div>
+
+        {assignments.length === 0 ? (
+          <p className="muted">No assignments yet.</p>
+        ) : (
+          <ul className="list">
+            {assignments.map((a) => {
+              const overdue = isOverdue(a.dueAt);
+              const chip = !canManage ? submissionChip(a.mySubmission) : null;
+              return (
+                <li key={a.id} className="session-li">
+                  <Link to={`/assignments/${a.id}`} className="event-row" style={{ flex: 1 }}>
+                    <div className="evtdate">
+                      <b className="tnum">{new Date(a.dueAt).getDate()}</b>
+                      <small>
+                        {new Date(a.dueAt).toLocaleDateString(undefined, { month: 'short' })}
+                      </small>
+                    </div>
+                    <div className="event-row__body">
+                      <b>{a.title}</b>
+                      <small className="muted">
+                        {dueLabel(a.dueAt)} · {a.points} pts
+                      </small>
+                    </div>
+                    <div className="event-row__meta">
+                      {canManage ? (
+                        <span className="chip soft">
+                          {a.stats.graded}/{a.stats.submitted} graded · {a.stats.enrolled} enrolled
+                        </span>
+                      ) : chip ? (
+                        <span className={`chip ${chip.cls}`}>{chip.label}</span>
+                      ) : (
+                        <span className={`chip ${overdue ? 'b-crit' : 'soft'}`}>
+                          {overdue ? 'Overdue' : 'Open'}
+                        </span>
+                      )}
+                      <Icon name="i-arrow" className="svg-ico" style={{ color: 'var(--faint)' }} />
+                    </div>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       {/* Sessions */}
       <section style={{ marginTop: 8 }}>

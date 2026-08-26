@@ -9,6 +9,11 @@ import {
   unenrollStudent,
   courseAnalytics,
 } from '../controllers/courseController.js';
+import {
+  listAssignments,
+  createAssignment,
+  getGradebook,
+} from '../controllers/assignmentController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 /**
@@ -31,5 +36,10 @@ router.post('/:id/students', enrollStudents);
 router.delete('/:id/students/:studentId', unenrollStudent);
 
 router.get('/:id/analytics', courseAnalytics);
+
+// Phase 7: coursework. Listing is open to enrolled students + owner/admin;
+// creation is gated to the owning faculty/admin inside the controller.
+router.route('/:id/assignments').get(listAssignments).post(createAssignment);
+router.get('/:id/gradebook', getGradebook);
 
 export default router;

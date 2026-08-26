@@ -11,6 +11,8 @@ import Course from './models/Course.js';
 import AttendanceSession from './models/AttendanceSession.js';
 import AttendanceRecord from './models/AttendanceRecord.js';
 import Announcement from './models/Announcement.js';
+import Assignment from './models/Assignment.js';
+import Submission from './models/Submission.js';
 
 /**
  * Seed known non-student accounts so the Phase 1 "done when" check is testable
@@ -116,7 +118,7 @@ async function seed() {
   await ClubJoinRequest.create({
     clubId: club._id,
     userId: student._id,
-    message: 'I love competitive programming — would love to join!',
+    message: 'I love competitive programming - would love to join!',
     collegeId: env.defaultCollegeId,
   });
   console.log(`[seed] created pending join request from ${student.email} → ${club.name}`);
@@ -132,7 +134,7 @@ async function seed() {
   const event = await Event.create({
     clubId: club._id,
     title: 'Hackathon Kickoff',
-    description: 'Kick off the semester hackathon — teams, themes, and free pizza.',
+    description: 'Kick off the semester hackathon - teams, themes, and free pizza.',
     location: 'Auditorium B',
     startAt,
     capacity: 2,
@@ -201,6 +203,61 @@ async function seed() {
   }
   console.log('[seed] created 4 attendance sessions with marks (Priya is below 75%)');
 
+  // Phase 7: one assignment on CS-301 with a spread of submission states so the
+  // grading roster, late flag, graded/ungraded states, and gradebook are all
+  // non-empty on first login. roster = [Sam, Nina, Omar, Priya].
+  await Submission.deleteMany({ collegeId: env.defaultCollegeId });
+  await Assignment.deleteMany({ collegeId: env.defaultCollegeId });
+  const dueAt = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000); // due 3 days ago
+  const assignment = await Assignment.create({
+    courseId: course._id,
+    title: 'Binary Tree Traversals',
+    description: 'Implement in-order, pre-order, and post-order traversal and submit your code.',
+    dueAt,
+    points: 100,
+    linkUrl: 'https://forms.gle/example-binary-tree-submission',
+    collegeId: env.defaultCollegeId,
+    createdBy: faculty._id,
+  });
+  const [sam, nina, omar] = roster; // priya intentionally left with no submission
+  await Submission.create([
+    {
+      assignmentId: assignment._id,
+      courseId: course._id,
+      studentId: sam._id,
+      text: 'Here is my recursive implementation of all three traversals.',
+      late: false,
+      status: 'graded',
+      grade: 92,
+      feedback: 'Clean recursion. Consider an iterative version for the bonus.',
+      submittedAt: new Date(dueAt.getTime() - 24 * 60 * 60 * 1000), // a day early
+      gradedBy: faculty._id,
+      gradedAt: new Date(),
+      collegeId: env.defaultCollegeId,
+    },
+    {
+      assignmentId: assignment._id,
+      courseId: course._id,
+      studentId: nina._id,
+      text: 'Submitting my solution - used a stack for the iterative in-order walk.',
+      late: false,
+      status: 'submitted',
+      submittedAt: new Date(dueAt.getTime() - 2 * 60 * 60 * 1000), // just before due
+      collegeId: env.defaultCollegeId,
+    },
+    {
+      assignmentId: assignment._id,
+      courseId: course._id,
+      studentId: omar._id,
+      text: 'Sorry this is a little late!',
+      late: true,
+      status: 'submitted',
+      submittedAt: new Date(dueAt.getTime() + 2 * 24 * 60 * 60 * 1000), // 2 days late
+      collegeId: env.defaultCollegeId,
+    },
+  ]);
+  console.log('[seed] created assignment "Binary Tree Traversals" with 3 submissions (1 graded, 1 on-time, 1 late; Priya none)');
+
   // Phase 6: a few demo announcements across the three scopes so the feed and
   // the notification bell aren't empty on first login. (No live notifications
   // are fanned out here — the socket server isn't running during a seed; the
@@ -220,7 +277,7 @@ async function seed() {
       scope: 'club',
       targetId: club._id,
       title: 'Hack night this Friday',
-      body: 'Bring a laptop and an idea — pizza is on the club. See the Hackathon Kickoff event to register.',
+      body: 'Bring a laptop and an idea - pizza is on the club. See the Hackathon Kickoff event to register.',
       authorId: lead._id,
       collegeId: env.defaultCollegeId,
     },

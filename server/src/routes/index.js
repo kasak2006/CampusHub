@@ -8,6 +8,8 @@ import courseRoutes from './course.routes.js';
 import attendanceRoutes from './attendance.routes.js';
 import announcementRoutes from './announcement.routes.js';
 import notificationRoutes from './notification.routes.js';
+import assignmentRoutes from './assignment.routes.js';
+import submissionRoutes from './submission.routes.js';
 
 /**
  * Root API router. Feature routers get mounted here as phases land:
@@ -16,6 +18,7 @@ import notificationRoutes from './notification.routes.js';
  *   Phase 3 → /events, /registrations
  *   Phase 4 → /courses, /attendance
  *   Phase 6 → /announcements, /notifications
+ *   Phase 7 → /assignments, /submissions (+ nested under /courses)
  */
 const router = Router();
 
@@ -28,5 +31,7 @@ router.use('/courses', courseRoutes);
 router.use('/attendance', attendanceRoutes);
 router.use('/announcements', announcementRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/assignments', assignmentRoutes);
+router.use('/submissions', submissionRoutes);
 
 export default router;

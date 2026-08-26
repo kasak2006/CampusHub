@@ -24,6 +24,9 @@ import CourseDetail from './pages/CourseDetail.jsx';
 import CourseAnalytics from './pages/CourseAnalytics.jsx';
 import SessionMarking from './pages/SessionMarking.jsx';
 import Announcements from './pages/Announcements.jsx';
+import AssignmentDetail from './pages/AssignmentDetail.jsx';
+import AssignmentForm from './pages/AssignmentForm.jsx';
+import Gradebook from './pages/Gradebook.jsx';
 
 /**
  * Root component. Public/auth pages render standalone; authenticated pages
@@ -66,7 +69,11 @@ export default function App() {
               <Route path="/courses/:id" element={<CourseDetail />} />
               <Route path="/courses/:id/edit" element={<CourseForm />} />
               <Route path="/courses/:id/analytics" element={<CourseAnalytics />} />
+              <Route path="/courses/:id/gradebook" element={<Gradebook />} />
+              <Route path="/courses/:courseId/assignments/new" element={<AssignmentForm />} />
               <Route path="/sessions/:sessionId" element={<SessionMarking />} />
+              <Route path="/assignments/:id" element={<AssignmentDetail />} />
+              <Route path="/assignments/:id/edit" element={<AssignmentForm />} />
               <Route path="/announcements" element={<Announcements />} />
             </Route>
           </Routes>

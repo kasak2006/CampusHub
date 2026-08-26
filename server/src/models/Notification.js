@@ -19,10 +19,10 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['announcement'],
+      enum: ['announcement', 'assignment', 'grade'],
       required: true,
     },
-    // Origin record (an Announcement id today); kept generic for later types.
+    // Origin record (an Announcement/Assignment id); kept generic for later types.
     refId: {
       type: mongoose.Schema.Types.ObjectId,
       default: null,

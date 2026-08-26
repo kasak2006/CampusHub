@@ -50,7 +50,10 @@ students got 403 posting to `college` and to a club they don't lead. Lint clean.
 
 ---
 
-## Phase 7: Assignments, Submissions & Grades
+## Phase 7: Assignments, Submissions & Grades ✅ DONE
+
+> **Completed & verified** (2026-08-25) — full build plan, task checklist, and live-verification
+> notes in [07-phase-plan.md](07-phase-plan.md). Summary below kept for context.
 
 **Goal:** Close the coursework loop — the single biggest jump in real usefulness. Bolts
 directly onto the existing `Course` model and reuses the one-doc-per-pair pattern from
