@@ -24,6 +24,7 @@ import CourseDetail from './pages/CourseDetail.jsx';
 import CourseAnalytics from './pages/CourseAnalytics.jsx';
 import SessionMarking from './pages/SessionMarking.jsx';
 import Announcements from './pages/Announcements.jsx';
+import Calendar from './pages/Calendar.jsx';
 import AssignmentDetail from './pages/AssignmentDetail.jsx';
 import AssignmentForm from './pages/AssignmentForm.jsx';
 import Gradebook from './pages/Gradebook.jsx';
@@ -75,6 +76,7 @@ export default function App() {
               <Route path="/assignments/:id" element={<AssignmentDetail />} />
               <Route path="/assignments/:id/edit" element={<AssignmentForm />} />
               <Route path="/announcements" element={<Announcements />} />
+              <Route path="/calendar" element={<Calendar />} />
             </Route>
           </Routes>
           <ThemeToggle />

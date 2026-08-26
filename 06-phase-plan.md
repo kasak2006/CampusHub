@@ -91,12 +91,12 @@ ownership rules enforced at the API, not just the UI.
 - *Faculty:* drop lecture slides/notes where students already look.
 
 **Tasks:**
-- [ ] Calendar API `GET /api/calendar?from=&to=` — merge, for the current user: their registered `Event`s, `AttendanceSession`s for enrolled/taught courses, and `Assignment` due dates; return a normalized `{ type, title, when, refId, url }[]`
-- [ ] Frontend calendar page — month/week grid (hand-rolled, or `react-big-calendar` if bundle budget allows); color-coded by type; click → deep-link to the source record
-- [ ] Build `Resource` schema — `{ collegeId, courseId, title, fileUrl, type, uploadedBy }`
-- [ ] Resources API — `GET/POST /api/courses/:id/resources`, `DELETE /api/resources/:id`; upload via the generalized `uploadFile` from Phase 7; upload gated to course faculty/admin
-- [ ] Frontend: a "Materials" tab on `CourseDetail` — list + upload (faculty) / download (students)
-- [ ] Add "Calendar" to the sidebar Overview nav
+- [x] Calendar API `GET /api/calendar?from=&to=` — merge, for the current user: their registered `Event`s, `AttendanceSession`s for enrolled/taught courses, and `Assignment` due dates; return a normalized `{ type, title, when, refId, url, meta }[]`
+- [x] Frontend calendar page — hand-rolled month grid (default) + week view; color-coded by type (coral events / blue sessions / amber dues); legend toggles per type; click → deep-link to the source record
+- [x] Build `Resource` schema — `{ collegeId, courseId, title, fileUrl, linkUrl, type, uploadedBy }` (added `linkUrl` so a material can be a file OR an external link)
+- [x] Resources API — `GET/POST /api/courses/:id/resources`, `DELETE /api/resources/:id`; upload via the generalized `uploadFile` from Phase 7; upload gated to course faculty/admin
+- [x] Frontend: a "Materials" section on `CourseDetail` — list + upload (faculty) / download-or-open (students)
+- [x] Add "Calendar" to the sidebar Overview nav
 
 **Done when:** A student opens the calendar and sees an event they registered for, a class
 session, and an assignment due date all in one view, each clickable to its source page. A

@@ -14,6 +14,7 @@ import {
   createAssignment,
   getGradebook,
 } from '../controllers/assignmentController.js';
+import { listResources, createResource } from '../controllers/resourceController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
 /**
@@ -41,5 +42,9 @@ router.get('/:id/analytics', courseAnalytics);
 // creation is gated to the owning faculty/admin inside the controller.
 router.route('/:id/assignments').get(listAssignments).post(createAssignment);
 router.get('/:id/gradebook', getGradebook);
+
+// Phase 8: course materials. Listing is open to enrolled students + owner/admin;
+// upload is gated to the owning faculty/admin inside the controller.
+router.route('/:id/resources').get(listResources).post(createResource);
 
 export default router;

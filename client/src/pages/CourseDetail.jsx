@@ -9,9 +9,10 @@ import {
 } from '../services/courses.js';
 import { listSessions, createSession, deleteSession } from '../services/attendance.js';
 import { listAssignments } from '../services/assignments.js';
+import { listResources, createResource, deleteResource } from '../services/resources.js';
 import { useToast } from '../context/ToastContext.jsx';
 import { pctClass } from '../utils/attendance.js';
-import { dueLabel, isOverdue, submissionChip } from '../utils/assignments.js';
+import { dueLabel, isOverdue, submissionChip, fileToDataUrl } from '../utils/assignments.js';
 
 function initials(name = '') {
   return name.trim().charAt(0).toUpperCase() || '?';
@@ -50,6 +51,7 @@ export default function CourseDetail() {
   const [course, setCourse] = useState(null);
   const [sessions, setSessions] = useState([]);
   const [assignments, setAssignments] = useState([]);
+  const [resources, setResources] = useState([]);
   const [state, setState] = useState('loading');
   const [error, setError] = useState('');
   const [action, setAction] = useState({ busy: false });
@@ -58,15 +60,24 @@ export default function CourseDetail() {
   const [sessionDate, setSessionDate] = useState(todayInput());
   const [sessionTitle, setSessionTitle] = useState('');
 
+  const [resTitle, setResTitle] = useState('');
+  const [resLink, setResLink] = useState('');
+  const [resFile, setResFile] = useState({ data: '', name: '' });
+  const [resFormKey, setResFormKey] = useState(0);
+
   const load = useCallback(async () => {
     const data = await getCourse(id);
     setCourse(data);
-    const [sess, asg] = await Promise.all([
+    const [sess, asg, res] = await Promise.all([
       listSessions(id).catch(() => []),
       listAssignments(id).catch(() => []),
+      listResources(id)
+        .then((d) => d.resources)
+        .catch(() => []),
     ]);
     setSessions(sess);
     setAssignments(asg);
+    setResources(res);
   }, [id]);
 
   useEffect(() => {
@@ -135,6 +146,34 @@ export default function CourseDetail() {
 
   const onDeleteSession = (sid) =>
     run(() => deleteSession(sid), () => 'Session deleted.');
+
+  const onResFile = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setResFile({ data: await fileToDataUrl(file), name: file.name });
+  };
+
+  const onAddResource = async (e) => {
+    e.preventDefault();
+    const payload = { title: resTitle.trim() };
+    if (resFile.data) {
+      payload.file = resFile.data;
+      payload.type = (resFile.name.split('.').pop() || 'file').toLowerCase();
+    } else {
+      payload.linkUrl = resLink.trim();
+      payload.type = 'link';
+    }
+    const created = await run(() => createResource(id, payload), () => 'Material added.');
+    if (created) {
+      setResTitle('');
+      setResLink('');
+      setResFile({ data: '', name: '' });
+      setResFormKey((k) => k + 1); // remount the file input to clear its label
+    }
+  };
+
+  const onDeleteResource = (rid) =>
+    run(() => deleteResource(rid), () => 'Material removed.');
 
   if (state === 'loading') return <div className="loading">Loading…</div>;
   if (state === 'error')
@@ -337,6 +376,115 @@ export default function CourseDetail() {
                       <Icon name="i-arrow" className="svg-ico" style={{ color: 'var(--faint)' }} />
                     </div>
                   </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
+
+      {/* Materials */}
+      <section style={{ marginTop: 8 }}>
+        <div className="section-h">
+          <h2>Materials</h2>
+          <span className="ln" />
+          <span className="chip soft">{resources.length}</span>
+        </div>
+
+        {canManage && (
+          <form className="card" onSubmit={onAddResource} style={{ marginBottom: 12 }}>
+            <label className="field" style={{ marginBottom: 10 }}>
+              <span className="field__label">Title</span>
+              <input
+                className="input"
+                type="text"
+                value={resTitle}
+                onChange={(e) => setResTitle(e.target.value)}
+                placeholder="e.g. Lecture 3 slides"
+                required
+              />
+            </label>
+            <div className="field-row" style={{ alignItems: 'flex-end' }}>
+              <label className="field">
+                <span className="field__label">
+                  File <span className="field__hint">(PDF, doc, slides…)</span>
+                </span>
+                <input key={resFormKey} className="file" type="file" onChange={onResFile} />
+                {resFile.name && (
+                  <span className="muted" style={{ fontSize: 12 }}>
+                    Selected: {resFile.name}
+                  </span>
+                )}
+              </label>
+              <label className="field">
+                <span className="field__label">
+                  or Link <span className="field__hint">(Drive, video…)</span>
+                </span>
+                <input
+                  className="input"
+                  type="url"
+                  value={resLink}
+                  onChange={(e) => setResLink(e.target.value)}
+                  placeholder="https://…"
+                  disabled={Boolean(resFile.data)}
+                />
+              </label>
+              <button
+                className="btn primary"
+                disabled={action.busy || !resTitle.trim() || (!resFile.data && !resLink.trim())}
+                style={{ marginBottom: 2 }}
+              >
+                <Icon name="i-plus" /> Add
+              </button>
+            </div>
+          </form>
+        )}
+
+        {resources.length === 0 ? (
+          <p className="muted">No materials yet.</p>
+        ) : (
+          <ul className="list">
+            {resources.map((r) => {
+              const href = r.fileUrl || r.linkUrl;
+              const isLink = !r.fileUrl && Boolean(r.linkUrl);
+              return (
+                <li key={r.id} className="session-li">
+                  <a
+                    href={href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="event-row"
+                    style={{ flex: 1, textDecoration: 'none' }}
+                  >
+                    <span className="res-ic">
+                      <Icon name={isLink ? 'i-link' : 'i-file'} />
+                    </span>
+                    <div className="event-row__body">
+                      <b>{r.title}</b>
+                      <small className="muted">
+                        {(r.type || 'file').toUpperCase()} · {r.uploadedBy?.name ?? 'Faculty'}
+                      </small>
+                    </div>
+                    <div className="event-row__meta">
+                      <span className="chip soft">
+                        <Icon
+                          name={isLink ? 'i-link' : 'i-download'}
+                          style={{ width: 13, height: 13, verticalAlign: '-2px' }}
+                        />{' '}
+                        {isLink ? 'Open' : 'Download'}
+                      </span>
+                    </div>
+                  </a>
+                  {canManage && (
+                    <button
+                      className="btn ghost sm session-li__del"
+                      disabled={action.busy}
+                      onClick={() => onDeleteResource(r.id)}
+                      title="Delete material"
+                    >
+                      <Icon name="i-trash" />
+                    </button>
+                  )}
                 </li>
               );
             })}

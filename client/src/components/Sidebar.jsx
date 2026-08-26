@@ -11,6 +11,7 @@ const OVERVIEW = [
   { to: '/dashboard', icon: 'i-grid', label: 'Dashboard' },
   { to: '/clubs', icon: 'i-users', label: 'Clubs' },
   { to: '/events', icon: 'i-calendar', label: 'Events' },
+  { to: '/calendar', icon: 'i-caldays', label: 'Calendar' },
   { to: '/announcements', icon: 'i-mega', label: 'Announcements' },
 ];
 

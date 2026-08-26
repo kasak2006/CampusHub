@@ -537,3 +537,48 @@ a{color:inherit}
 .grade-row__head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .grade-row__text{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink);background:var(--surface-2);border-radius:var(--r-sm);padding:9px 12px;white-space:pre-wrap}
 .grade-row__form{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
+
+/* ============ CALENDAR (Phase 8) ============ */
+/* Per-type accent colours: coral events, blue sessions, amber dues. */
+.cal-grid{--c-event:var(--primary);--c-session:var(--info);--c-due:var(--warn)}
+.cal-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.cal-nav{display:inline-flex;gap:6px}
+.cal-nav .btn.sm svg{width:15px;height:15px}
+
+.cal-legend{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 12px}
+.cal-leg{display:inline-flex;align-items:center;gap:7px;font:inherit;font-size:12.5px;font-weight:600;color:var(--ink);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;transition:.12s}
+.cal-leg:hover{border-color:var(--border-strong)}
+.cal-leg .dot{width:9px;height:9px;border-radius:3px;flex:none}
+.cal-leg--event .dot{background:var(--primary)}
+.cal-leg--session .dot{background:var(--info)}
+.cal-leg--due .dot{background:var(--warn)}
+.cal-leg.off{color:var(--faint);background:var(--surface-2)}
+.cal-leg.off .dot{background:var(--faint)}
+
+.cal-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow)}
+.cal-dow{background:var(--surface-2);text-align:center;padding:9px 0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.cal-cell{background:var(--surface);min-height:96px;padding:6px 7px;display:flex;flex-direction:column;gap:3px}
+.cal-grid.week .cal-cell{min-height:220px}
+.cal-cell.out{background:var(--surface-2)}
+.cal-cell.out .cal-daynum{color:var(--faint)}
+.cal-daynum{font-size:12.5px;font-weight:600;color:var(--ink);width:24px;height:24px;display:grid;place-items:center;margin-bottom:1px}
+.cal-cell.today .cal-daynum{background:var(--primary);color:#fff;border-radius:50%}
+
+.cal-pill{text-align:left;font:inherit;font-size:11.5px;font-weight:500;line-height:1.3;padding:3px 7px;border-radius:6px;border:0;border-left:3px solid var(--pc,var(--primary));cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:.1s}
+.cal-pill:hover{filter:brightness(.97)}
+.cal-pill--event{--pc:var(--primary);background:color-mix(in srgb,var(--primary) 14%,var(--surface));color:var(--primary-600)}
+.cal-pill--session{--pc:var(--info);background:color-mix(in srgb,var(--info) 14%,var(--surface));color:var(--info)}
+.cal-pill--due{--pc:var(--warn);background:color-mix(in srgb,var(--warn) 16%,var(--surface));color:var(--warn)}
+:root[data-theme="dark"] .cal-pill--event,:root[data-theme="dark"] .cal-pill--session,:root[data-theme="dark"] .cal-pill--due{color:var(--ink)}
+@media (prefers-color-scheme:dark){.cal-pill--event,.cal-pill--session,.cal-pill--due{color:var(--ink)}}
+.cal-more{font-size:11px;color:var(--muted);padding:1px 7px;font-weight:600}
+
+@media(max-width:720px){
+  .cal-cell{min-height:76px;padding:4px 4px}
+  .cal-pill{font-size:10.5px;padding:2px 5px}
+  .cal-dow{font-size:10px}
+}
+
+/* Course materials (Phase 8) — leading icon on each resource row */
+.res-ic{width:40px;height:40px;border-radius:11px;flex:none;display:grid;place-items:center;background:var(--primary-050);color:var(--primary)}
+.res-ic svg{width:18px;height:18px}
